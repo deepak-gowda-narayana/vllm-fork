@@ -579,6 +579,23 @@ class WorkerWrapperBase:
             logger.exception(msg)
             raise e
 
+    def save_tensorized_model(self, tensorizer_config):
+        """
+        Saves the model in a tensorized format using Tensorizer.
+
+        Args:
+            tensorizer_config (dict): Configuration parameters for saving.
+        """
+        model = self.get_model() 
+        save_path = tensorizer_config.tensorizer_uri 
+
+        from vllm.model_executor.model_loader.tensorizer import (
+            serialize_vllm_model
+        )
+
+        serialize_vllm_model(model, tensorizer_config)
+        return
+
     def __getattr__(self, attr):
         return getattr(self.worker, attr)
 

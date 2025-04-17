@@ -311,14 +311,16 @@ class TensorizerAgent:
                 child.weight.data = new_weight
 
     def _check_tensors_on_meta_device(self):
-        for tensor in self.model.state_dict().values():
-            if tensor.device.type == 'meta':
-                raise ValueError(
-                    "The serialized model contains tensors on the meta device,"
-                    " indicating that some tensors were not loaded properly."
-                    " Please check that the parameters of the model being"
-                    " specified match that of the serialized model, such as"
-                    " its quantization.")
+        for name,tensor in self.model.state_dict().items():
+            if name == 'transformer.h.11.ln_2.bias' or name == 'lm_head.weight':
+                print(f" {name} - {tensor}")
+            # if tensor.device.type == 'meta':
+            #     raise ValueError(
+            #         "The serialized model contains tensors on the meta device,"
+            #         " indicating that some tensors were not loaded properly."
+            #         " Please check that the parameters of the model being"
+            #         " specified match that of the serialized model, such as"
+            #         " its quantization.")
 
     def deserialize(self):
         """
@@ -336,13 +338,14 @@ class TensorizerAgent:
         """
         before_mem = get_mem_usage()
         start = time.perf_counter()
+        self._check_tensors_on_meta_device()
         with _read_stream(
                 self.tensorizer_config.tensorizer_uri,
                 **self.tensorizer_args.stream_params
         ) as stream, TensorDeserializer(
                 stream,
                 dtype=self.tensorizer_config.dtype,
-                device=f'cuda:{torch.cuda.current_device()}',
+                device=f'hpu',
                 **self.tensorizer_args.deserializer_params) as deserializer:
             deserializer.load_into_module(self.model)
             end = time.perf_counter()
