@@ -359,6 +359,8 @@ class TensorizerAgent:
                     end - start, per_second)
         logger.info("Memory usage before: %s", before_mem)
         logger.info("Memory usage after: %s", after_mem)
+        if self.model.config.tie_word_embeddings:
+            self.model.lm_head = self.model.lm_head.tie_weights(self.model.transformer.wte)
 
         self._check_tensors_on_meta_device()
         self._resize_lora_embeddings()
