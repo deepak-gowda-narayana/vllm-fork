@@ -2084,8 +2084,7 @@ class HPUModelRunnerBase(ModelRunnerBase[TModelInputForHPU]):
         seq_data = SequenceData.from_seqs(prompt_token_ids)
         seq_data = SequenceData(prompt_token_ids_array)
 
-        image_h = int(math.sqrt(num_patches))
-        image_grid_thw = torch.tensor([1, image_h, image_h])
+        image_grid_thw = torch.tensor([1, num_patches//8, 8])
         pixel_values = torch.randn(image_grid_thw.prod(), 1176)  # TODO: figure out the variable name
         multi_modal_data = {
             "pixel_values": pixel_values,
